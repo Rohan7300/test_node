@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <style>
+    #messages {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Chat</h1>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="Type a message..." />
+  <button id="sendButton">Send</button>
+
+  <script>
+    const socket = io('http://localhost:8080');
+    
+    // Listen for incoming messages
+    socket.on('receiveMessage', (data) => {
+      const messagesDiv = document.getElementById('messages');
+      const newMessage = document.createElement('p');
+      newMessage.textContent = `${data.user}: ${data.content}`;
+      messagesDiv.appendChild(newMessage);
+    });
+
+    // Handle sending messages
+    document.getElementById('sendButton').addEventListener('click', () => {
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value;
+      const userId = 'someUserId'; // Replace with actual user ID
+
+      if (message) {
+        socket.emit('sendMessage', { userId, message });
+        messageInput.value = ''; // Clear input field
+      }
+    });
+  </script>
+</body>
+</html>
