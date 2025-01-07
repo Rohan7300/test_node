@@ -1,104 +1,81 @@
-var mongoose = require('mongoose')
-var url = "mongodb://localhost:27017/myDB"
-var express = require('express')
-const app = express()
-const http = require('http')
-const socketIo = require('socket.io')
-const bodyParser = require('body-parser')
-const { timeStamp } = require('console')
-const cors = require('cors')
+var mongoose = require('mongoose');
+var url = "mongodb://localhost:27017/myDB";
+var express = require('express');
+const app = express();
+const http = require('http');
+const socketIo = require('socket.io');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const fs = require('fs');
 
 
 app.use(cors());
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+
+// MongoDB Connection
 mongoose.connect(url)
- .then(()=>{
-    console.log("Db is connected")
- })
+  .then(() => {
+    console.log("DB is connected");
+  })
   .catch((error) => console.error('Connection error', error));
-    
-  const userschema = new mongoose.Schema({
-    name: 'string',
-    lastName: 'string',
-    age: 'Number'
-  })
 
-  const messageSchema = new mongoose.Schema({
-   userId: Number,
-   messageContent: 'string'
-  })
-  
-  const User = mongoose.model('Users', userschema)
-  const message = mongoose.model('Message', messageSchema)
-
-  const server = http.createServer(app);
-
-  const io = socketIo(server)
-  io.on('connection', (socket)=>{
-    console.log("user connected")
-  
-
-  socket.on('sendMessage', async(messageData)=>{
-  const {userId, message} = messageData;
-  try{
-    const user = await User.findById(userId)
-    if(user){
-      const newMessage = new Message({
-        user: user._id,
-        content: message
-      })
-      await newMessage.save()
-      io.emit('receiveMessage', {
-        user: user.name,
-        content: message,
-        timestamp: newMessage.timestamp
-      });
-    }
-  } catch (err){
-    console.log("Error")
-  }
-})
-
-socket.on('disconnect', () => {
-  console.log('A user disconnected');
+// Message Schema Definition
+const messageSchema = new mongoose.Schema({
+  userId: { type: String, required: true },  // Using String for userId (can be a unique ID or placeholder)
+  messageContent: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
 });
+
+const Message = mongoose.model('Message', messageSchema);
+
+// Server and Socket.IO Setup
+const server = http.createServer(app);
+const io = socketIo(server);
+
+io.on('connection', (socket) => {
+  console.log("User connected");
+
+  // Listen for the 'sendMessage' event from the client
+  socket.on('sendMessage', async (messageData) => {
+    const { userId, message } = messageData;
+
+    try {
+      // Save the message to the database
+      const newMessage = new Message({
+        userId: userId,  // Save the userId (which can be any identifier)
+        messageContent: message,
+      });
+      await newMessage.save();
+
+      // Emit the saved message to all connected clients
+      io.emit('receiveMessage', {
+        userId: userId,  // Send userId (or you could send a name or other identifier)
+        content: message,
+        timestamp: newMessage.timestamp,
+      });
+    } catch (err) {
+      console.log("Error:", err);
+    }
   });
-app.get('/items',async(req,res)=>{
-  try{
-    const items = await User.find();
-    res.status(200).json(items);
-  }
-  catch(err){
-    res.status(500).json({message: "Error", error:err })
-  }
-})
 
-app.post('/items', async(req,res)=>{
-  const { name, lastName, age } = req.body;
-  const newItem = new User({name, lastName, age})
-  try{
-    const savedItem = await newItem.save();
-    res.status(201).json(savedItem)
-  }
-  catch(err){
-    res.status(500).json({ message: "error",error: err})
-  }
-})
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
 
-app.post('/sendMessage', async(req,res)=>{
-  const {messageContent} = req.body;
-  const newUser = new message({messageContent})
-  try{
-   const savedItem = await newUser.save();
-   res.status(201).json(savedItem)
-   
-  }
-  catch(err){
-    res.status(500).json({message: "error",error: err})
-  }
-})
+// Serve HTML file for root URL (/)
+app.get('/', (req, res) => {
+  fs.readFile(('first.html'), 'utf8', (err, data) => {
+    if (err) {
+      res.status(500).send("Error reading HTML file");
+    } else {
+      res.setHeader('Content-Type', 'text/html');
+      res.send(data);
+    }
+  });
+});
 
-app.listen(8080,()=>{
-  console.log("you are connected 8080")
-})
-
+// Start Server
+server.listen(8080, () => {
+  console.log("Server is running on port 8080");
+});
