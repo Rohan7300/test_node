@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var url = "mongodb://localhost:27017/myDB";
+var url = process.env.MONGO_URI || "mongodb://localhost:27017/myDB"
 var express = require('express');
 const app = express();
 const http = require('http');
