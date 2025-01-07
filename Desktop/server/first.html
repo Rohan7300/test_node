@@ -13,8 +13,8 @@
   </style>
 </head>
 <body>
-  <h1>Real-Time Chat</h1>
-  <div id="messages"></div>
+  <h1>Chat App</h1>
+  <div id="messages"></div> 
   <input type="text" id="messageInput" placeholder="Type a message..." />
   <button id="sendButton">Send</button>
 
@@ -25,7 +25,7 @@
     socket.on('receiveMessage', (data) => {
       const messagesDiv = document.getElementById('messages');
       const newMessage = document.createElement('p');
-      newMessage.textContent = `${data.user}: ${data.content}`;
+      newMessage.textContent = `${data.userId}: ${data.content}`;
       messagesDiv.appendChild(newMessage);
     });
 
@@ -33,11 +33,12 @@
     document.getElementById('sendButton').addEventListener('click', () => {
       const messageInput = document.getElementById('messageInput');
       const message = messageInput.value;
-      const userId = 'someUserId'; // Replace with actual user ID
+      const userId = 'someUserId'; // You can use any unique ID, or generate one if needed
 
       if (message) {
+        // Emit message with userId and message content
         socket.emit('sendMessage', { userId, message });
-        messageInput.value = ''; // Clear input field
+        messageInput.value = ''; // Clear the input field
       }
     });
   </script>
