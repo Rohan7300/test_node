@@ -1,9 +1,8 @@
 name: my-node-app
-
 on:
   push:
     branches:
-      - main:
+     - main
 
 jobs:
   test:
