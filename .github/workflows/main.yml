@@ -21,4 +21,4 @@ jobs:
         run: |
          docker-compose --version 
          cd Desktop/server
-         docker build -t my-app .
+         docker-compose up --build
