@@ -13,5 +13,6 @@ jobs:
 
       - name: run docker-compose
         run: |
+         docker-compose --version 
          cd Desktop/server
          docker build -t my-app .
