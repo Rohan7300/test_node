@@ -14,4 +14,4 @@ jobs:
       - name: run docker-compose
         run: |
          cd Desktop/server
-         docker-compose up --build
+         docker build -t my-app .
