@@ -22,3 +22,4 @@ jobs:
          docker-compose --version 
          cd Desktop/server
          docker-compose up --build
+         docker-compose down
